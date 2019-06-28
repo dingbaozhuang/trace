@@ -1,0 +1,50 @@
+server:
+  http:
+    address:
+      "0.0.0.0"
+    port:
+      "9988"
+  rpc:
+    address:
+      "0.0.0.0"
+    port:
+      "9989"
+  grpc:
+    address:
+      "0.0.0.0"
+    port:
+      "8889"
+  log:
+    dir:
+      "./server.log"
+
+  remote_address:
+    test_addr:
+      "10.25.89.114"
+    production_addr:
+      - "127.0.0.2"
+      - "127.0.0.3"
+      - "127.0.0.4"
+
+client:
+  http:
+    address:
+      "0.0.0.0"
+    port:
+      "9987"
+  rpc:
+    address:
+      "0.0.0.0"
+    port:
+      "9989"
+  grpc:
+    address:
+      "0.0.0.0"
+    port:
+      "8889"
+  log:
+    dir:
+      "./client.log"
+  target_directory:
+    dir:
+      "/data/logs/server_api/"

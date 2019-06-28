@@ -1,0 +1,30 @@
+syntax = "proto3";
+package grpc;
+
+service Trace {
+    rpc TransportLog (Request) returns (Response){}
+}
+
+message Request {
+    string ID = 1;
+    string IPAddr = 2;
+    string Msg = 3;
+    string SspID = 4;
+    string SlotID = 5;
+    string AppID = 6;
+    string AdType = 7;
+    string SspAppIdKey = 8;
+    string SspAppPlaceIdKey = 9;
+    string SspAppSecretKey = 10;
+    string Timestamp = 11;
+    string Type = 12;
+};
+
+message Response{
+    int32 Code = 1;
+    string Err = 2;
+    string ID = 3;
+    string Data = 4;
+};
+
+
