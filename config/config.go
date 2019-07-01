@@ -36,12 +36,18 @@ type TargetDirectory struct {
 	Dir string `mapstructure:"dir"`
 }
 
+type WebSocketConfig struct {
+	Address string `mapstructure:"address"`
+	Port    string `mapstructure:"port"`
+}
+
 type Server struct {
-	HTTP          HTTPConfig    `mapstructure:"http"`
-	RPC           RPCConfig     `mapstructure:"rpc"`
-	GRPC          GRPCConfig    `mapstructure:"grpc"`
-	Log           log.Config    `mapstructure:"log"`
-	RemoteAddress RemoteAddress `mapstructure:"remote_address"`
+	HTTP          HTTPConfig      `mapstructure:"http"`
+	RPC           RPCConfig       `mapstructure:"rpc"`
+	GRPC          GRPCConfig      `mapstructure:"grpc"`
+	WebSocket     WebSocketConfig `mapstructure:"websocket"`
+	Log           log.Config      `mapstructure:"log"`
+	RemoteAddress RemoteAddress   `mapstructure:"remote_address"`
 }
 
 type Client struct {

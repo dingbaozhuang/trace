@@ -14,13 +14,18 @@ server:
       "0.0.0.0"
     port:
       "8889"
+  websocket:
+    address:
+      "0.0.0.0"
+    port:
+      "8000"
   log:
     dir:
       "./server.log"
 
   remote_address:
     test_addr:
-      "10.25.89.114"
+      "127.0.0.2"
     production_addr:
       - "127.0.0.2"
       - "127.0.0.3"

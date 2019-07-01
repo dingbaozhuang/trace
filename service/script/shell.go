@@ -2,11 +2,12 @@ package script
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/yumimobi/trace/util/json"
 
 	"github.com/yumimobi/trace/config"
 )

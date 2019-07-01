@@ -56,9 +56,7 @@ func RequestMsg(cmd string) ([]byte, error) {
 		return nil, err
 	}
 
-	// 此处应是send to client
-	resp, err := grpc.SendMsgToServer(req)
-	// resp, err := grpc.SendMsg(req)
+	resp, err := grpc.SendMsg(req)
 	if err != nil {
 		return nil, err
 	}

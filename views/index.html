@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>WebSocket Test</title>
+<script>
+    var websocket;
+    var email;
+    var username;
+    var message;
+
+    function websocketInit() {
+        // 创建 websocket
+        websocket = new WebSocket('ws://' + '127.0.0.1:8000' + '/trace');
+    }
+
+    function websocketErr() {
+        websocket.onerror = function (evt) { console.log("WebSocketError!"); };
+    }
+
+    function myFunction() {
+        var output;
+        myValue();
+        var str1 =
+        {
+            // email: "",
+            // username: "",
+            // message: ""
+            SspID: "",
+            SlotID: "",
+            AdType: "",
+            AppID: "",
+            SspAppIdKey: "",
+            SspAppPlaceIdKey: "",
+            SspAppSecretKey: "",
+            Type: "",
+        };
+
+        // 给 json 中赋值
+        // str1.email = email;
+        // str1.username = username;
+        // str1.message = message;
+        str1.SspID = SspID
+        str1.SlotID = SlotID
+        str1.AdType = AdType
+        str1.AppID = AppID
+        str1.SspAppIdKey = SspAppIdKey
+        str1.SspAppPlaceIdKey = SspAppPlaceIdKey
+        str1.SspAppSecretKey = SspAppSecretKey
+        str1.Type = Type
+
+        // 解析 json 格式数据
+        // var obj = JSON.parse(str1);
+
+        // obj.email=email;
+        // obj.username=username;
+        // obj.message=message;
+
+        // 修改 json 数据后格式不为 json 格式，需要转换为 json 格式
+        var obj = JSON.stringify(str1)
+        alert(email + "-" + username + "-" + message)
+        alert(obj)
+
+
+        // 创建 websocket
+        websocketInit();
+        // 一旦创建 websocket 成功则会执行 onopen 函数
+        websocket.onopen = function () {
+            console.log("open");
+            // 通过 websocket 发送消息
+            websocket.send(obj);
+        };
+
+        // 通过 websocket 接收消息
+        websocket.onmessage = function (evt) {
+            console.log(evt.data)
+            x = document.getElementById("output");
+            var value = JSON.parse(evt.data);
+            show = "发送的内容为：<br />email=" + value.email + " " + "<br />username=" + value.username + " " + "<br />message=" + value.message;
+            x.innerHTML = show;
+        };
+
+        websocket.onclose = function (evt) {
+            console.log("websocket is close!")
+        }
+    }
+
+    function myValue() {
+        // email = document.getElementById("email").value;
+        // username = document.getElementById("username").value;
+        // message = document.getElementById("message").value;
+
+        SspID = document.getElementById("SspID").value;
+        SlotID = document.getElementById("SlotID").value;
+        AdType = document.getElementById("AdType").value;
+        AppID = document.getElementById("AppID").value;
+        SspAppIdKey = document.getElementById("SspAppIdKey").value;
+        SspAppPlaceIdKey = document.getElementById("SspAppPlaceIdKey").value;
+        SspAppSecretKey = document.getElementById("SspAppSecretKey").value;
+        Type = document.getElementById("Type").value;
+    }
+</script>
+
+<h2>YUMIMOBI Trace</h2>
+
+<body>
+    <div id="output">
+        <!-- email:<input id="email" type="text" name="email" /><br />
+        username:<input id="username" type="text" name="username" /><br />
+        message:<input id="message" type="text" name="message" /><br /> -->
+        SspID:<input id="SspID" type="text" name="SspID" /><br />
+        SlotID:<input id="SlotID" type="text" name="SlotID" /><br />
+        AdType:<input id="AdType" type="text" name="AdType" /><br />
+        AppID:<input id="AppID" type="text" name="AppID" /><br />
+        SspAppIdKey:<input id="SspAppIdKey" type="text" name="SspAppIdKey" /><br />
+        SspAppPlaceIdKey:<input id="SspAppPlaceIdKey" type="text" name="SspAppPlaceIdKey" /><br />
+        SspAppSecretKey:<input id="SspAppSecretKey" type="text" name="SspAppSecretKey" /><br />
+
+        <!-- 下拉列表框 -->
+        <select name="Type" id="Type">
+            <option value="cat">历史数据</option>
+            <option value="tail">实时数据</option>
+        </select>
+
+        <input type="button" value="点击这里发送数据" onclick="myFunction()" />
+    </div>
+</body>
+
+</html>
