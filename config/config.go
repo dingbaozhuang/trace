@@ -32,6 +32,11 @@ type GRPCConfig struct {
 	Port    string `mapstructure:"port"`
 }
 
+type GRPServerCConfig struct {
+	Address []string `mapstructure:"address"`
+	Port    []string `mapstructure:"port"`
+}
+
 type TargetDirectory struct {
 	Dir string `mapstructure:"dir"`
 }
@@ -42,12 +47,12 @@ type WebSocketConfig struct {
 }
 
 type Server struct {
-	HTTP          HTTPConfig      `mapstructure:"http"`
-	RPC           RPCConfig       `mapstructure:"rpc"`
-	GRPC          GRPCConfig      `mapstructure:"grpc"`
-	WebSocket     WebSocketConfig `mapstructure:"websocket"`
-	Log           log.Config      `mapstructure:"log"`
-	RemoteAddress RemoteAddress   `mapstructure:"remote_address"`
+	HTTP          HTTPConfig       `mapstructure:"http"`
+	RPC           RPCConfig        `mapstructure:"rpc"`
+	GRPC          GRPServerCConfig `mapstructure:"grpc"`
+	WebSocket     WebSocketConfig  `mapstructure:"websocket"`
+	Log           log.Config       `mapstructure:"log"`
+	RemoteAddress RemoteAddress    `mapstructure:"remote_address"`
 }
 
 type Client struct {
@@ -93,6 +98,5 @@ func load(c *Config) error {
 		return fmt.Errorf("unmarshal config is failed, err:%v", err)
 	}
 
-	fmt.Println("------", *c)
 	return nil
 }

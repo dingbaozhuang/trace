@@ -2,12 +2,15 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	fmt "fmt"
 	"net"
+	"os"
+	"strings"
 
 	"github.com/yumimobi/trace/log"
+	"github.com/yumimobi/trace/models"
 	"github.com/yumimobi/trace/service/script"
+	"github.com/yumimobi/trace/util"
 
 	"github.com/yumimobi/trace/config"
 	"google.golang.org/grpc"
@@ -16,11 +19,11 @@ import (
 
 type server struct{}
 
-var c TraceClient
+var clients []TraceClient
 
 func GRPCServerInit() {
 	conf := config.Conf
-	lis, err := net.Listen("tcp", conf.Server.GRPC.Address+":"+conf.Server.GRPC.Port)
+	lis, err := net.Listen("tcp", conf.Client.GRPC.Address+":"+conf.Client.GRPC.Port)
 	if err != nil {
 		log.Entry.Error().Err(err).Msg("server grpc listen is failed.")
 	}
@@ -36,17 +39,35 @@ func GRPCServerInit() {
 
 func NewGRPCClien() {
 	conf := config.Conf
-	conn, err := grpc.Dial(conf.Client.GRPC.Address+":"+conf.Client.GRPC.Port, grpc.WithInsecure())
-	if err != nil {
-		log.Entry.Error().Err(err).Msg("grpc dial is failed.")
+
+	if len(conf.Server.GRPC.Address) != len(conf.Server.GRPC.Port) {
+		log.Entry.Error().Msg("trace server grpc addr is not match port.")
+		os.Exit(0)
 	}
-	// defer conn.Close()
-	c = NewTraceClient(conn)
+
+	clients = make([]TraceClient, len(conf.Server.GRPC.Address))
+
+	for index, _ := range conf.Server.GRPC.Address {
+		conn, err := grpc.Dial(conf.Server.GRPC.Address[index]+":"+conf.Server.GRPC.Port[index], grpc.WithInsecure())
+		if err != nil {
+			log.Entry.Error().Err(err).Msg("grpc dial is failed.")
+		}
+		// defer conn.Close()
+		clients[index] = NewTraceClient(conn)
+	}
 }
 
 func (s *server) TransportLog(ctx context.Context, req *Request) (*Response, error) {
+	ips, _ := util.GetLocalIP()
+
 	if req == nil {
-		return nil, errors.New("req is nil.")
+		resp := &Response{
+			Code: models.StatusGRPCRequestIsNil,
+			ID:   req.ID,
+			Data: "",
+			IP:   strings.Join(ips, ","),
+		}
+		return resp, nil
 	}
 
 	m := requestConvert2Map(req)
@@ -57,19 +78,37 @@ func (s *server) TransportLog(ctx context.Context, req *Request) (*Response, err
 		Code: 0,
 		ID:   req.ID,
 		Data: msg,
+		IP:   strings.Join(ips, ","),
 	}
 	return resp, nil
 }
 
-func SendMsg(req *Request) (*Response, error) {
+func SendMsg(req *Request) ([]*Response, error) {
 
 	fmt.Println("xxxxxxgrpcxxxxx******", req.String())
-	resp, err := c.TransportLog(context.Background(), req)
-	if err != nil {
-		return nil, err
+	conf := config.Conf
+
+	serverNum := len(conf.Server.GRPC.Address)
+	resps := make(chan *Response, serverNum)
+	responses := make([]*Response, 0)
+	for i, _ := range clients {
+		go sendMsg2All(req, clients[i], resps)
 	}
 
-	return resp, nil
+	count := 0
+	for {
+		if count >= serverNum {
+			break
+		}
+
+		select {
+		case msg, _ := <-resps:
+			responses = append(responses, msg)
+		}
+		count++
+	}
+
+	return responses, nil
 }
 
 func requestConvert2Map(req *Request) map[string]string {
@@ -86,4 +125,14 @@ func requestConvert2Map(req *Request) map[string]string {
 	m["Type"] = req.Type
 
 	return m
+}
+
+func sendMsg2All(req *Request, client TraceClient, resp chan *Response) {
+	response, err := client.TransportLog(context.Background(), req)
+	if err != nil {
+		r := &Response{Code: models.StatusGRPCResponseFiled}
+		resp <- r
+	}
+
+	resp <- response
 }

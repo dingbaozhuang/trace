@@ -14,5 +14,5 @@ type Config struct {
 }
 
 func Init(c *Config) {
-	Entry = zerolog.New(os.Stdout).With().Logger().Level(zerolog.InfoLevel)
+	Entry = zerolog.New(os.Stdout).With().Logger().Level(zerolog.DebugLevel)
 }

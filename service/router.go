@@ -5,6 +5,8 @@ import (
 )
 
 func (s *Server) Router(r *gin.Engine) {
+	// 加载 /trace 模板
+	r.LoadHTMLGlob("views/*")
 	r.GET("/", defaultHandler)
 	r.GET("/trace", traceHandler)
 	r.GET("/server_api/:role/:date", serverAPIHTTPHandler)

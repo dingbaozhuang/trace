@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/yumimobi/trace/util/json"
@@ -23,7 +22,6 @@ func WebSocketInit() {
 	conf := config.Conf
 
 	http.HandleFunc("/trace", WebSocketHandler)
-	fmt.Println("websocket start ", conf.Server.WebSocket.Address+":"+conf.Server.WebSocket.Port)
 
 	err := http.ListenAndServe(conf.Server.WebSocket.Address+":"+conf.Server.WebSocket.Port, nil)
 	if err != nil {
@@ -38,15 +36,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	log.Entry.Debug().Msg("websocket is start.")
-
 	for {
 		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket read is failed")
 			break
 		}
-		fmt.Println("websocket read msg is:", string(message))
 
 		log.Entry.Debug().Str("req", string(message)).Msg("websocket request msg")
 
