@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/yumimobi/trace/config"
 	"github.com/yumimobi/trace/util"
@@ -137,7 +138,7 @@ func execGrepCmd(cmd string, tmp string, msg chan Message) {
 
 	ReadTmpFile(f, msg, message)
 
-	// removeTmpFile(tmp)
+	removeTmpFile(tmp)
 	return
 }
 
@@ -169,5 +170,5 @@ func ReadTmpFile(f *os.File, msg chan Message, message Message) {
 }
 
 func removeTmpFile(file string) {
-	os.Remove(file)
+	util.Tw.AddTimer(1800*time.Second, "remove", file)
 }
