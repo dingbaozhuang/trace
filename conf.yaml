@@ -54,4 +54,4 @@ client:
       "./client.log"
   target_directory:
     dir:
-      "/data/logs/server_api/"
+      "../"

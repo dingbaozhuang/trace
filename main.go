@@ -40,7 +40,7 @@ func main() {
 	// if err != nil {
 	// 	fmt.Println("----grpc send msg is failed, err:", err)
 	// }
-	// data, _ := json.Marshal(resp)
+	// data, _ := (resp)
 	// fmt.Println("grpc resp data is :", string(data))
 	// //-----------
 

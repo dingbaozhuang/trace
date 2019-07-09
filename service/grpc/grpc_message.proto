@@ -18,6 +18,7 @@ message Request {
     string SspAppSecretKey = 10;
     string Timestamp = 11;
     string Type = 12;
+    string SID = 13;
 };
 
 message Response{

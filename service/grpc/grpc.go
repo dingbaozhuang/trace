@@ -73,7 +73,6 @@ func (s *server) TransportLog(ctx context.Context, req *Request) (*Response, err
 	m := requestConvert2Map(req)
 	msg := script.Command(m)
 
-	fmt.Println("----grpc--req msg=", req.IPAddr, req.Msg)
 	resp := &Response{
 		Code: 0,
 		ID:   req.ID,
@@ -113,15 +112,20 @@ func SendMsg(req *Request) ([]*Response, error) {
 
 func requestConvert2Map(req *Request) map[string]string {
 	m := make(map[string]string)
-	m["ID"] = req.ID
-	m["SspID"] = req.SspID
-	m["SlotID"] = req.SlotID
-	m["AppID"] = req.AppID
-	m["AdType"] = fmt.Sprint(req.AdType)
-	m["SspAppIdKey"] = req.SspAppIdKey
-	m["SspAppPlaceIdKey"] = req.SspAppPlaceIdKey
-	m["SspAppSecretKey"] = req.SspAppSecretKey
-	m["Timestamp"] = req.Timestamp
+	if req.SID != "" {
+		m["SID"] = req.SID
+	} else {
+		m["ID"] = req.ID
+		m["SspID"] = req.SspID
+		m["SlotID"] = req.SlotID
+		m["AppID"] = req.AppID
+		m["AdType"] = fmt.Sprint(req.AdType)
+		m["SspAppIdKey"] = req.SspAppIdKey
+		m["SspAppPlaceIdKey"] = req.SspAppPlaceIdKey
+		m["SspAppSecretKey"] = req.SspAppSecretKey
+		m["Timestamp"] = req.Timestamp
+	}
+
 	m["Type"] = req.Type
 
 	return m

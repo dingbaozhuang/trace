@@ -1,6 +1,8 @@
 package websocket
 
 import (
+	"bytes"
+	"fmt"
 	"net/http"
 
 	"github.com/yumimobi/trace/util/json"
@@ -36,33 +38,39 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket read is failed")
-			break
-		}
-
-		log.Entry.Debug().Str("req", string(message)).Msg("websocket request msg")
-
-		resp, err := convertMsgFormat(message)
-		if err != nil {
-			log.Entry.Error().Err(err).Str("req", string(message)).Msg("websocket convert msg is failed")
-			break
-		}
-
-		log.Entry.Debug().Str("resp", string(resp)).Msg("websocket response msg")
-
-		err = c.WriteMessage(mt, resp)
-		if err != nil {
-			log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket write is failed")
-			break
-		}
+	// for {
+	mt, message, err := c.ReadMessage()
+	if err != nil {
+		log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket read is failed")
+		return
+		// break
 	}
+
+	log.Entry.Debug().Str("req", string(message)).Msg("websocket request msg")
+
+	resp, err := convertMsgFormat(message)
+	if err != nil {
+		log.Entry.Error().Err(err).Str("req", string(message)).Msg("websocket convert msg is failed")
+		return
+		// break
+	}
+
+	log.Entry.Debug().Str("resp", string(resp)).Msg("websocket response msg")
+
+	err = c.WriteMessage(mt, resp)
+	if err != nil {
+		log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket write is failed")
+		return
+		// break
+	}
+	// }
+	return
 }
 
 func convertMsgFormat(req []byte) ([]byte, error) {
 	request := &grpc.Request{}
+
+	fmt.Println("-------", string(req))
 	err := json.Unmarshal(req, request)
 	if err != nil {
 		return nil, err
@@ -78,5 +86,9 @@ func convertMsgFormat(req []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	// fmt.Println("--------", string(resp))
+
+	resp = bytes.ReplaceAll(resp, []byte(`\x03`), []byte(`\n`))
+	resp = bytes.ReplaceAll(resp, []byte(`\`), []byte(``))
 	return resp, nil
 }

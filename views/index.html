@@ -1,127 +1,220 @@
 <!DOCTYPE html>
-<meta charset="utf-8" />
-<title>YUMIMOBI Trace</title>
-<script>
-    var websocket;
-    var email;
-    var username;
-    var message;
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="keywords" content="">
+		<meta name="Description" content=""/>
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+		<meta name="applicable-device" content="mobile">
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+		<meta http-equiv="expires" content="0">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="description" itemprop="description" content="">
+		<title>首页</title>
+		<style>
+			body,h1,h2,h3,h4,h5,h6,hr,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,input,textarea,th,div,td {
+			  margin: 0;
+			  padding: 0;
+			  box-sizing: border-box;
+			  -webkit-tap-highlight-color:rgba(255,0,0,0);
+			}
+			body,button,input,select,textarea { font: 12px/1.5tahoma, arial, \5b8b\4f53;}
+			h1,h2,h3,h4,h5,h6 { font-size: 100%;}
+			address,cite,dfn,em,var { font-style: normal;}
+			code,kbd,pre,samp {font-family: couriernew, courier, monospace;}
+			small { font-size: 12px;}
+			ul,ol { list-style: none;}
+			a {text-decoration: none;-webkit-tap-highlight-color:rgba(255,0,0,0);}
+			a:hover {text-decoration: none;-webkit-tap-highlight-color:rgba(255,0,0,0);}
+			a:active {text-decoration: none;-webkit-tap-highlight-color:rgba(255,0,0,0);}
+			a:visited {text-decoration: none; -webkit-tap-highlight-color:rgba(255,0,0,0);}
+			sup {vertical-align: text-top;}
+			sub { vertical-align: text-bottom;}
+			legend { color: #000;}
+			
+			fieldset,img {border: 0;display:block;}
+			button,input,select,textarea {font-size: 100%;}
+			table { border-collapse: collapse; border-spacing: 0;}
+			html,body{
+				font-size: 100px;
+				font-family: Heiti SC,Helvetica,Droidsansfallback,Droid Sans;
+				background: #ffffff;}
+			/*清除浮动代码*/
+			.clearfloat:after{display:block;clear:both;content:"";visibility:hidden;height:0}
+			.clearfloat{zoom:1}			
+			body{/*background: #5d3f8f;*/ padding-top: .2rem;}
+			.box{
+				/*background-image: url(5f96d2a7bf4ddcc6d1b5ed280633dff.jpg);
+			    background-repeat: no-repeat;
+			    background-size: 210% 6.5rem;
+			    background-position-x: -2.2rem;*/ color: #000000; margin: auto; display: block;padding: .5rem .25rem;height: 6.5rem;width: 3.5rem;}
+			h2{font-size: .2rem;text-align: center;}
+			#output{font-size: .14rem;display: block;width: 100%;margin-top: 20px;}
+			input{ font-size: 100%; margin-top: .3rem;height: 26px;margin-left: 8px;border-radius: 5px;/*border-color: #cccccc;*/padding: 0 10px; width: 1.5rem;}
+			select{margin-left: 8px;height: 27px;margin-top: .3rem;width: 1.5rem;border-radius: 5px;/*border: none;*/ padding: 0 10px;left: 8px;}
+			input[type=button]{height: 36px;font-size: .14rem;width: 2.7rem;/*background: #45277d;*/ color: #000000;letter-spacing: 1px;	}
+			span{display: inline-block;width: 1.3rem;}
+			input[type=radio]{width:.2rem;height: .2rem;}
+			#sid{display: none;}
+			
+		</style>
+	</head>
+	<body id="body">
+		<div class="box">
+			<h2>YUMIMOBI Trace</h2>	
+		    <div id="output">
+		    	<!--<form action="" autocomplete="on">-->
+			        <!-- email:<input id="email" type="text" name="email" /><br />
+			        username:<input id="username" type="text" name="username" /><br />
+			        message:<input id="message" type="text" name="message" /><br /> -->
+			        <!-- 下拉列表框 -->
+			        <span>数据:</span><select name="Type" id="Type">
+			            <option value="cat">历史数据</option>
+			            <option value="tail">实时数据</option>
+			        </select>
+			        <span>判断是否选择Sid:</span>
+			        <label><input class="sids1" type="radio" name="DoorCt" value="1" onclick="radioClick1()"/>是</label>
+					<label><input class="sids2" type="radio" name="DoorCt" value="0" onclick="radioClick2()" checked="checked"/>否<label><br>
+					<div id="sid"><span>Sid:</span><input id="Sid" type="text" name="Sid" /></div>
+			   		<div id="choose">
+						<span>SspID:</span><input id="SspID" type="text" name="SspID" /><br />
+				        <span>SlotID:</span><input id="SlotID" type="text" name="SlotID" /><br />
+				        <span>AdType:</span><input id="AdType" type="text" name="AdType" /><br />
+				        <span>AppID:</span><input id="AppID" type="text" name="AppID" /><br />
+				        <span>SspAppIdKey:</span><input id="SspAppIdKey" type="text" name="SspAppIdKey" /><br />
+				        <span>SspAppPlaceIdKey:</span><input id="SspAppPlaceIdKey" type="text" name="SspAppPlaceIdKey" /><br />
+				        <span>SspAppSecretKey:</span><input id="SspAppSecretKey" type="text" name="SspAppSecretKey" /><br />			   			
+			   		</div>
+			        <input type="button" value="点击这里发送数据" onclick="myFunction()" />		    		
+		    	<!--</form>-->
 
-    function websocketInit() {
-        // 创建 websocket
-        websocket = new WebSocket('ws://' + '127.0.0.1:8000' + '/trace');
-    }
-
-    function websocketErr() {
-        websocket.onerror = function (evt) { console.log("WebSocketError!"); };
-    }
-
-    function myFunction() {
-        var output;
-        myValue();
-        var str1 =
-        {
-            // email: "",
-            // username: "",
-            // message: ""
-            SspID: "",
-            SlotID: "",
-            AdType: "",
-            AppID: "",
-            SspAppIdKey: "",
-            SspAppPlaceIdKey: "",
-            SspAppSecretKey: "",
-            Type: "",
-        };
-
-        // 给 json 中赋值
-        // str1.email = email;
-        // str1.username = username;
-        // str1.message = message;
-        str1.SspID = SspID
-        str1.SlotID = SlotID
-        str1.AdType = AdType
-        str1.AppID = AppID
-        str1.SspAppIdKey = SspAppIdKey
-        str1.SspAppPlaceIdKey = SspAppPlaceIdKey
-        str1.SspAppSecretKey = SspAppSecretKey
-        str1.Type = Type
-
-        // 解析 json 格式数据
-        // var obj = JSON.parse(str1);
-
-        // obj.email=email;
-        // obj.username=username;
-        // obj.message=message;
-
-        // 修改 json 数据后格式不为 json 格式，需要转换为 json 格式
-        var obj = JSON.stringify(str1)
-        alert(email + "-" + username + "-" + message)
-        alert(obj)
-
-
-        // 创建 websocket
-        websocketInit();
-        // 一旦创建 websocket 成功则会执行 onopen 函数
-        websocket.onopen = function () {
-            console.log("open");
-            // 通过 websocket 发送消息
-            websocket.send(obj);
-        };
-
-        // 通过 websocket 接收消息
-        websocket.onmessage = function (evt) {
-            console.log(evt.data)
-            x = document.getElementById("output");
-            var value = JSON.parse(evt.data);
-            show = "发送的内容为：<br />email=" + value.email + " " + "<br />username=" + value.username + " " + "<br />message=" + value.message;
-            x.innerHTML = show;
-        };
-
-        websocket.onclose = function (evt) {
-            console.log("websocket is close!")
-        }
-    }
-
-    function myValue() {
-        // email = document.getElementById("email").value;
-        // username = document.getElementById("username").value;
-        // message = document.getElementById("message").value;
-
-        SspID = document.getElementById("SspID").value;
-        SlotID = document.getElementById("SlotID").value;
-        AdType = document.getElementById("AdType").value;
-        AppID = document.getElementById("AppID").value;
-        SspAppIdKey = document.getElementById("SspAppIdKey").value;
-        SspAppPlaceIdKey = document.getElementById("SspAppPlaceIdKey").value;
-        SspAppSecretKey = document.getElementById("SspAppSecretKey").value;
-        Type = document.getElementById("Type").value;
-    }
-</script>
-
-<h2>YUMIMOBI Trace</h2>
-
-<body>
-    <div id="output">
-        <!-- email:<input id="email" type="text" name="email" /><br />
-        username:<input id="username" type="text" name="username" /><br />
-        message:<input id="message" type="text" name="message" /><br /> -->
-        SspID:<input id="SspID" type="text" name="SspID" /><br />
-        SlotID:<input id="SlotID" type="text" name="SlotID" /><br />
-        AdType:<input id="AdType" type="text" name="AdType" /><br />
-        AppID:<input id="AppID" type="text" name="AppID" /><br />
-        SspAppIdKey:<input id="SspAppIdKey" type="text" name="SspAppIdKey" /><br />
-        SspAppPlaceIdKey:<input id="SspAppPlaceIdKey" type="text" name="SspAppPlaceIdKey" /><br />
-        SspAppSecretKey:<input id="SspAppSecretKey" type="text" name="SspAppSecretKey" /><br />
-
-        <!-- 下拉列表框 -->
-        <select name="Type" id="Type">
-            <option value="cat">历史数据</option>
-            <option value="tail">实时数据</option>
-        </select>
-
-        <input type="button" value="点击这里发送数据" onclick="myFunction()" />
-    </div>
-</body>
-
+		    </div>			
+		</div>
+		
+	</body>
+	<script type="text/javascript">
+		//表单输入记忆
+/*		document.getElementById("Sid").value = sessionStorage.getItem("Sid");
+		document.getElementById("SspID").value = sessionStorage.getItem("SspID");
+		document.getElementById("SlotID").value = sessionStorage.getItem("SlotID");
+		document.getElementById("AdType").value = sessionStorage.getItem("AdType");
+		document.getElementById("AppID").value = sessionStorage.getItem("AppID");
+		document.getElementById("SspAppIdKey").value = sessionStorage.getItem("SspAppIdKey");
+		document.getElementById("SspAppPlaceIdKey").value = sessionStorage.getItem("SspAppPlaceIdKey");
+		document.getElementById("SspAppSecretKey").value = sessionStorage.getItem("SspAppSecretKey");
+		document.getElementById("Type").value = sessionStorage.getItem("Type");
+	*/	
+		
+		var Sid,SspID,SlotID,AdType,AppID,SspAppIdKey,SspAppPlaceIdKey,SspAppSecretKey;
+		//判断sid的显示和隐藏
+		var radios1 = document.getElementsByClassName("sids1");
+		var radios2 = document.getElementsByClassName("sids2");
+		var sid = document.getElementById("sid");
+		var choose = document.getElementById("choose");
+		var isClick = false;
+		function radioClick1() {	
+			isClick = true;
+			sid.style.display = "block";
+			choose.style.display = "none";
+		}
+		function radioClick2() {
+			isClick = false;
+			sid.style.display = "none";
+			choose.style.display = "block";
+		}
+		
+		var websocket,email,username,message;
+		
+		function websocketInit() {
+		    // 创建 websocket
+		    websocket = new WebSocket('ws://' + '127.0.0.1:8000' + '/trace');
+		}
+		
+		function websocketErr() {
+		    websocket.onerror = function (evt) { console.log("WebSocketError!"); };
+		}
+		
+		function myFunction() {
+		    var obj = myValue();
+		    // 创建 websocket
+		    websocketInit();
+		    // 一旦创建 websocket 成功则会执行 onopen 函数
+		    websocket.onopen = function () {
+		        console.log("open"+obj);
+		        // 通过 websocket 发送消息
+		        websocket.send(obj);
+		    };
+		
+		    // 通过 websocket 接收消息
+		    websocket.onmessage = function (evt) {
+		        console.log(evt.data)
+		        x = document.getElementById("body");
+		        // var value = JSON.parse(evt.data);
+		        // show = value
+		        x.innerHTML = evt.data;
+		        x.style.fontSize = "16px";
+		    };
+		
+		    websocket.onclose = function (evt) {
+		        console.log("websocket is close!")
+		    }
+		}
+		
+		function myValue() {
+		
+		    SspID = document.getElementById("SspID").value;
+		    Sid = document.getElementById("Sid").value;
+		    SlotID = document.getElementById("SlotID").value;
+		    AdType = document.getElementById("AdType").value;
+		    AppID = document.getElementById("AppID").value;
+		    SspAppIdKey = document.getElementById("SspAppIdKey").value;
+		    SspAppPlaceIdKey = document.getElementById("SspAppPlaceIdKey").value;
+		    SspAppSecretKey = document.getElementById("SspAppSecretKey").value;
+		    Type = document.getElementById("Type").value;
+		    if(isClick == false){
+			    var str1 =
+			    {
+			        // message: ""
+			        SspID: "",
+			        SlotID: "",
+			        AdType: "",
+			        AppID: "",
+			        SspAppIdKey: "",
+			        SspAppPlaceIdKey: "",
+			        SspAppSecretKey: "",
+			        Type: "",
+			    };
+			    str1.SspID = SspID
+			    str1.SlotID = SlotID
+			    str1.AdType = AdType
+			    str1.AppID = AppID
+			    str1.SspAppIdKey = SspAppIdKey
+			    str1.SspAppPlaceIdKey = SspAppPlaceIdKey
+			    str1.SspAppSecretKey = SspAppSecretKey
+			    str1.Type = Type	
+			    // 修改 json 数据后格式不为 json 格式，需要转换为 json 格式
+			    obj = JSON.stringify(str1)
+			    // alert(email + "-" + username + "-" + message)
+			    console.log(obj)	
+				return obj		    
+		    }else{
+			    var str1 =
+			    {
+			        Sid: "",
+			        Type: ""
+			    };	
+			    str1.Sid = Sid
+			    str1.Type = Type	
+			    // 修改 json 数据后格式不为 json 格式，需要转换为 json 格式
+			    obj = JSON.stringify(str1)
+			    // alert(email + "-" + username + "-" + message)
+			    console.log(obj)	
+				return obj		    
+		    }	
+		}	
+			
+	</script>
 </html>
