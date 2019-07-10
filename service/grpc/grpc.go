@@ -57,6 +57,7 @@ func NewGRPCClien() {
 	}
 }
 
+// 简单rpc
 func (s *server) TransportLog(ctx context.Context, req *Request) (*Response, error) {
 	ips, _ := util.GetLocalIP()
 
@@ -81,6 +82,25 @@ func (s *server) TransportLog(ctx context.Context, req *Request) (*Response, err
 	}
 	return resp, nil
 }
+
+// // Server-side streaming RPC
+// func (s *server) ListTransportLog(req *Request, stream Trace_ListTransportLogServer) error {
+// 	ips, _ := util.GetLocalIP()
+// 	if req == nil {
+// 		resp := &Response{
+// 			Code: models.StatusGRPCRequestIsNil,
+// 			ID:   req.ID,
+// 			Data: "",
+// 			IP:   strings.Join(ips, ","),
+// 		}
+
+// 		if err := stream.Send(resp); err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	}
+
+// }
 
 func SendMsg(req *Request) ([]*Response, error) {
 
@@ -127,6 +147,7 @@ func requestConvert2Map(req *Request) map[string]string {
 	}
 
 	m["Type"] = req.Type
+	m["UUID"] = req.Uuid
 
 	return m
 }

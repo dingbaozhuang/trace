@@ -3,6 +3,7 @@ package grpc;
 
 service Trace {
     rpc TransportLog (Request) returns (Response){}
+    // rpc ListTransportLog(Request) returns (stream Response) {}
 }
 
 message Request {
@@ -19,6 +20,7 @@ message Request {
     string Timestamp = 11;
     string Type = 12;
     string SID = 13;
+    string Uuid = 14;
 };
 
 message Response{

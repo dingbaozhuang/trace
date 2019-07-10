@@ -48,7 +48,7 @@ func Command(m map[string]string) string {
 
 func getCmd(m map[string]string) (string, string) {
 
-	id := m["ID"]
+	id := m["UUID"]
 	sspId := m["SspID"]
 	slotId := m["SlotID"]
 	appId := m["AppID"]

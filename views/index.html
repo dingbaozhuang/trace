@@ -274,16 +274,16 @@
 </body>
 <script type="text/javascript">
 	//表单输入记忆
-	/*		document.getElementById("Sid").value = sessionStorage.getItem("Sid");
-			document.getElementById("SspID").value = sessionStorage.getItem("SspID");
-			document.getElementById("SlotID").value = sessionStorage.getItem("SlotID");
-			document.getElementById("AdType").value = sessionStorage.getItem("AdType");
-			document.getElementById("AppID").value = sessionStorage.getItem("AppID");
-			document.getElementById("SspAppIdKey").value = sessionStorage.getItem("SspAppIdKey");
-			document.getElementById("SspAppPlaceIdKey").value = sessionStorage.getItem("SspAppPlaceIdKey");
-			document.getElementById("SspAppSecretKey").value = sessionStorage.getItem("SspAppSecretKey");
-			document.getElementById("Type").value = sessionStorage.getItem("Type");
-		*/
+	document.getElementById("Sid").value = localStorage.getItem("Sid");
+	document.getElementById("SspID").value = localStorage.getItem("SspID");
+	document.getElementById("SlotID").value = localStorage.getItem("SlotID");
+	document.getElementById("AdType").value = localStorage.getItem("AdType");
+	document.getElementById("AppID").value = localStorage.getItem("AppID");
+	document.getElementById("SspAppIdKey").value = localStorage.getItem("SspAppIdKey");
+	document.getElementById("SspAppPlaceIdKey").value = localStorage.getItem("SspAppPlaceIdKey");
+	document.getElementById("SspAppSecretKey").value = localStorage.getItem("SspAppSecretKey");
+	document.getElementById("Type").value = localStorage.getItem("Type");
+		
 
 	var Sid, SspID, SlotID, AdType, AppID, SspAppIdKey, SspAppPlaceIdKey, SspAppSecretKey;
 	//判断sid的显示和隐藏
@@ -296,11 +296,25 @@
 		isClick = true;
 		sid.style.display = "block";
 		choose.style.display = "none";
+	//表单输入记忆
+	document.getElementById("Sid").value = localStorage.getItem("Sid");
+	document.getElementById("Type").value = localStorage.getItem("Type");
+
 	}
 	function radioClick2() {
 		isClick = false;
 		sid.style.display = "none";
 		choose.style.display = "block";
+	//表单输入记忆
+	document.getElementById("SspID").value = localStorage.getItem("SspID");
+	document.getElementById("SlotID").value = localStorage.getItem("SlotID");
+	document.getElementById("AdType").value = localStorage.getItem("AdType");
+	document.getElementById("AppID").value = localStorage.getItem("AppID");
+	document.getElementById("SspAppIdKey").value = localStorage.getItem("SspAppIdKey");
+	document.getElementById("SspAppPlaceIdKey").value = localStorage.getItem("SspAppPlaceIdKey");
+	document.getElementById("SspAppSecretKey").value = localStorage.getItem("SspAppSecretKey");
+	document.getElementById("Type").value = localStorage.getItem("Type");
+
 	}
 
 	var websocket, email, username, message;
@@ -360,6 +374,15 @@
 		SspAppSecretKey = document.getElementById("SspAppSecretKey").value;
 		Type = document.getElementById("Type").value;
 		var uuid = guid();
+			localStorage.setItem("SspID",SspID);
+			localStorage.setItem("SlotID",SlotID);
+			localStorage.setItem("AdType",AdType);
+			localStorage.setItem("AppID",AppID);
+			localStorage.setItem("SspAppIdKey",SspAppIdKey);
+			localStorage.setItem("SspAppPlaceIdKey",SspAppPlaceIdKey);
+			localStorage.setItem("SspAppSecretKey",SspAppSecretKey);
+			localStorage.setItem("Type",Type);
+			localStorage.setItem("Sid",Sid);
 
 		if (isClick == false) {
 			var str1 =
