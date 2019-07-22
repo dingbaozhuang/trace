@@ -7,7 +7,6 @@ import (
 	"github.com/yumimobi/trace/log"
 	"github.com/yumimobi/trace/service"
 	"github.com/yumimobi/trace/service/grpc"
-	"github.com/yumimobi/trace/util"
 )
 
 func main() {
@@ -18,7 +17,7 @@ func main() {
 	}
 
 	log.Init(&config.Conf.Client.Log)
-	util.DelayInit()
+	// util.DelayInit()
 
 	c := service.NewClient()
 	c.StartHTTP()

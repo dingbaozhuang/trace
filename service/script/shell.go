@@ -1,10 +1,7 @@
 package script
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -37,10 +34,34 @@ func Command(m map[string]string) string {
 		case message, ok := <-msg:
 			if ok != true {
 				data, _ := json.Marshal(msgs)
-				fmt.Println("-------", string(data))
+				fmt.Println("-----shell--", string(data))
 				return string(data)
 			}
 			msgs = append(msgs, message)
+		}
+	}
+	return ""
+}
+
+func StreamCommand(m map[string]string, stream chan string) string {
+	msg := make(chan Message, 100)
+
+	cmd, tmp := getCmd(m)
+	if cmd == "" {
+		return "Required parameter is missing."
+	}
+
+	go execGrepCmd(cmd, tmp, msg)
+
+	for {
+		select {
+		case message, ok := <-msg:
+			if ok != true {
+				break
+			}
+			data, _ := json.Marshal(message)
+			stream <- string(data)
+			fmt.Println("-----shell--", string(data))
 		}
 	}
 	return ""
@@ -121,9 +142,19 @@ func execGrepCmd(cmd string, tmp string, msg chan Message) {
 
 	message.IP = strings.Join(ips, ",")
 	IsCmd := exec.Command("bash", "-c", cmd)
-	err = IsCmd.Run()
+
+	method := ""
+	if strings.HasPrefix(cmd, "cat") {
+		method = "cat"
+		err = Cat(IsCmd, tmp)
+
+	} else if strings.HasPrefix(cmd, "tail") {
+		method = "tail"
+		err = Tail(IsCmd, tmp)
+	}
+
 	if err != nil {
-		log.Println("exec bash shell is failed, err: ", err)
+		fmt.Println("exec bash shell is failed, err: ", err)
 		message.Err = err.Error()
 		msg <- message
 		return
@@ -131,44 +162,29 @@ func execGrepCmd(cmd string, tmp string, msg chan Message) {
 
 	f, err := os.Open(tmp)
 	if err != nil {
+		fmt.Println("------err:", err)
 		message.Err = err.Error()
 		msg <- message
 		return
 	}
+	defer f.Close()
 
-	ReadTmpFile(f, msg, message)
-
-	removeTmpFile(tmp)
-	return
-}
-
-func ReadTmpFile(f *os.File, msg chan Message, message Message) {
-	r := bufio.NewReader(f)
-	for {
-		str, err := r.ReadString('\n')
-		str = util.GreedyMatchJSONString(str)
-
-		// 走到此处，如果是EOF，则在读取到EOF之前会把有效的数据读入到str中
-		if err == io.EOF {
-			//此时str中是有数据的需要处理
-			message.Msg = str
-			msg <- message
-			break
-		}
-		if err != nil {
-			message.Err = err.Error()
-			msg <- message
-			//应该返回错误,先判断是否为nil，不为在判断是否等于EOF,等于break出for，然后继续执行；其他错误直接return
-			// fmt.Println("read string is failed, err: ", err)
-			break
-		}
-		//str中会包含'\n'
-		message.Msg = str
-		msg <- message
+	fmt.Println("===read tmp file")
+	switch method {
+	case "cat":
+		ReadCatTmpFile(f, msg, message)
+	case "tail":
+		ReadTailTmpFile(f, msg, message)
 	}
+
 	return
 }
 
 func removeTmpFile(file string) {
-	util.Tw.AddTimer(1800*time.Second, "remove", file)
+
+	// 注册延时处理函数
+	util.AddDelayFunc("remove", func(file interface{}) {
+		os.Remove(file.(string))
+	})
+	util.Tw.AddTimer(60*time.Second, "remove", util.GenerateDelayParameter("remove", file))
 }

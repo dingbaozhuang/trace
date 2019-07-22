@@ -3,7 +3,7 @@ package grpc;
 
 service Trace {
     rpc TransportLog (Request) returns (Response){}
-    // rpc ListTransportLog(Request) returns (stream Response) {}
+    rpc ListTransportLog(Request) returns (stream Response) {}
 }
 
 message Request {

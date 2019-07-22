@@ -9,7 +9,7 @@ func (s *Server) Router(r *gin.Engine) {
 	r.LoadHTMLGlob("views/*.html")
 	r.GET("/", defaultHandler)
 	r.GET("/trace", traceHandler)
-	r.GET("/server_api/:role/:date", serverAPIHTTPHandler)
+	// r.GET("/server_api/:role/:date", serverAPIHTTPHandler)
 }
 
 func (c *Client) Router(r *gin.Engine) {

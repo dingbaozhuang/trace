@@ -10,6 +10,9 @@ import (
 	"github.com/yumimobi/trace/service/websocket"
 )
 
+/*
+	服务端重启，客户端自动重连
+*/
 func main() {
 	err := config.Init()
 	if err != nil {

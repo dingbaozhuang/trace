@@ -3,6 +3,18 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "ZmmxqyS6RGbWls7u8VrFJvKGC3g=",
+			"path": "github.com/campoy/embedmd",
+			"revision": "97c13d6e41602fc6e397eb51c45f38069371a969",
+			"revisionTime": "2018-11-27T03:10:20Z"
+		},
+		{
+			"checksumSHA1": "tXy3gjonkjI7srNa6NsY9Hc+G8w=",
+			"path": "github.com/campoy/embedmd/embedmd",
+			"revision": "97c13d6e41602fc6e397eb51c45f38069371a969",
+			"revisionTime": "2018-11-27T03:10:20Z"
+		},
+		{
 			"checksumSHA1": "YImPVNZRCKOaaReWnFEH+AaP8NM=",
 			"path": "github.com/fsnotify/fsnotify",
 			"revision": "1485a34d5d5723fea214f5710708e19a831720e4",
@@ -81,6 +93,12 @@
 			"revisionTime": "2018-11-28T19:23:52Z"
 		},
 		{
+			"checksumSHA1": "3ORLCzeT6ci2RkN0jo1bY6bmE8A=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "80c2d40e9b91f2ef7a9c1a403aeec64d1b89a9a6",
+			"revisionTime": "2019-04-27T04:03:06Z"
+		},
+		{
 			"checksumSHA1": "bPPNuq11pA/YSJzwxS0163WnhCo=",
 			"path": "github.com/hashicorp/hcl",
 			"revision": "99e2f22d1c94b272184d97dd9d252866409100ab",
@@ -141,6 +159,36 @@
 			"revisionTime": "2019-04-30T13:52:23Z"
 		},
 		{
+			"checksumSHA1": "Ox5LkTafijv6NKp4hSHpQQJTS7k=",
+			"path": "github.com/hpcloud/tail",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
+			"checksumSHA1": "/vOFpWVxFSz6spvdjByFbq4zgXY=",
+			"path": "github.com/hpcloud/tail/ratelimiter",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
+			"checksumSHA1": "t4NGDWk2wdDw9HE75WZGY4shnbk=",
+			"path": "github.com/hpcloud/tail/util",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
+			"checksumSHA1": "xnLZdk6hsMlYR+rKcXN+owdM5Nw=",
+			"path": "github.com/hpcloud/tail/watch",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
+			"checksumSHA1": "op7wvyXuY7hf6cXP2kIoW2CniuE=",
+			"path": "github.com/hpcloud/tail/winfile",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
 			"checksumSHA1": "2gKOH6qYm1aYS5wVdJrB4jDBQxw=",
 			"path": "github.com/json-iterator/go",
 			"revision": "25fa392355a1247f99f8975710a2c4f0f55a081f",
@@ -163,6 +211,12 @@
 			"path": "github.com/mitchellh/mapstructure",
 			"revision": "3536a929edddb9a5b34bd6861dc4a9647cb459fe",
 			"revisionTime": "2018-10-05T04:51:35Z"
+		},
+		{
+			"checksumSHA1": "YKalIdDTV+whMV8I5pG9LdL7rPU=",
+			"path": "github.com/ouqiang/timewheel",
+			"revision": "ebfd24bc16881e8eaf50e27c1da64d284ead4b26",
+			"revisionTime": "2019-01-02T12:18:31Z"
 		},
 		{
 			"checksumSHA1": "UHcucbwfP3legtdc0ADZQJG3/6g=",
@@ -500,10 +554,24 @@
 			"revisionTime": "2018-03-02T21:39:55Z"
 		},
 		{
+			"checksumSHA1": "oFfFiuMXIgISoinxUuV1/cIgjUQ=",
+			"origin": "github.com/hpcloud/tail/vendor/gopkg.in/fsnotify.v1",
+			"path": "gopkg.in/fsnotify.v1",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
+		},
+		{
 			"checksumSHA1": "P/k5ZGf0lEBgpKgkwy++F7K1PSg=",
 			"path": "gopkg.in/go-playground/validator.v8",
 			"revision": "5f1438d3fca68893a817e4a66806cea46a9e4ebf",
 			"revisionTime": "2017-07-30T05:02:35Z"
+		},
+		{
+			"checksumSHA1": "QF4S/m8RxYi4W+A98I1ZLb881n8=",
+			"origin": "github.com/hpcloud/tail/vendor/gopkg.in/tomb.v1",
+			"path": "gopkg.in/tomb.v1",
+			"revision": "37f4271387456dd1bf82ab1ad9229f060cc45386",
+			"revisionTime": "2017-08-14T16:06:53Z"
 		},
 		{
 			"checksumSHA1": "QqDq2x8XOU7IoOR98Cx1eiV5QY8=",

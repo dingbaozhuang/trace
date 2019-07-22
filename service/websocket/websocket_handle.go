@@ -38,57 +38,64 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	// for {
 	mt, message, err := c.ReadMessage()
 	if err != nil {
 		log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket read is failed")
 		return
-		// break
 	}
 
 	log.Entry.Debug().Str("req", string(message)).Msg("websocket request msg")
 
-	resp, err := convertMsgFormat(message)
+	request := &grpc.Request{}
+	err = json.Unmarshal(message, request)
 	if err != nil {
-		log.Entry.Error().Err(err).Str("req", string(message)).Msg("websocket convert msg is failed")
 		return
-		// break
 	}
 
-	log.Entry.Debug().Str("resp", string(resp)).Msg("websocket response msg")
+	SendGRPCMsg(mt, c, message)
 
-	err = c.WriteMessage(mt, resp)
-	if err != nil {
-		log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket write is failed")
-		return
-		// break
-	}
-	// }
 	return
 }
 
-func convertMsgFormat(req []byte) ([]byte, error) {
-	request := &grpc.Request{}
+func SendGRPCMsg(mt int, c *websocket.Conn, req []byte) {
+	resps := make(chan *grpc.Response, 1000)
 
-	fmt.Println("-------", string(req))
+	request := &grpc.Request{}
 	err := json.Unmarshal(req, request)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	response, err := grpc.SendMsg(request)
-	if err != nil {
-		return nil, err
+	for i, _ := range grpc.Clients {
+		go grpc.SendStreamMsg2All(request, grpc.Clients[i], resps)
 	}
 
-	resp, err := json.Marshal(response)
-	if err != nil {
-		return nil, err
+	var data []byte
+	for {
+
+		select {
+		case msg, ok := <-resps:
+			if !ok {
+				fmt.Println("recv grpc msg is failed")
+				return
+			}
+
+			data, err = json.Marshal(msg)
+			if err != nil {
+				fmt.Println("marshal recv grpc msg is failed,err:", err)
+				return
+			}
+		}
+
+		data = bytes.ReplaceAll(data, []byte(`\x03`), []byte(`\n`))
+		data = bytes.ReplaceAll(data, []byte(`\`), []byte(``))
+		err = c.WriteMessage(mt, data)
+		if err != nil {
+			log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket write is failed")
+			fmt.Println("websocket write is failed")
+			return
+		}
 	}
 
-	// fmt.Println("--------", string(resp))
-
-	resp = bytes.ReplaceAll(resp, []byte(`\x03`), []byte(`\n`))
-	resp = bytes.ReplaceAll(resp, []byte(`\`), []byte(``))
-	return resp, nil
+	return
 }
