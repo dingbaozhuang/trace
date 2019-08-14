@@ -339,7 +339,7 @@
 			websocket.send(obj);
 		};
 
-		var msg;
+		var msg = "";
 		// 通过 websocket 接收消息
 		websocket.onmessage = function (evt) {
 			console.log(evt.data)

@@ -1,9 +1,12 @@
 package script
 
 import (
+	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -18,23 +21,38 @@ type Message struct {
 	Err string `json:"err"`
 }
 
+type FileInfo struct {
+	Name    string
+	ModTime time.Time
+}
+
+type fileInfo []*FileInfo
+
+func (a fileInfo) Len() int           { return len(a) }
+func (a fileInfo) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a fileInfo) Less(i, j int) bool { return a[i].ModTime.Before(a[j].ModTime) }
+
 func Command(m map[string]string) string {
 	msg := make(chan Message, 100)
 	msgs := make([]Message, 0)
 
-	cmd, tmp := getCmd(m)
+	cmd, tmp := GetCmd(m)
 	if cmd == "" {
 		return "Required parameter is missing."
 	}
 
-	go execGrepCmd(cmd, tmp, msg)
+	ctx, cancle := context.WithCancel(context.Background())
+	defer func() {
+		cancle()
+	}()
+
+	go ExecGrepCmd(ctx, cmd, tmp, msg)
 
 	for {
 		select {
 		case message, ok := <-msg:
 			if ok != true {
 				data, _ := json.Marshal(msgs)
-				fmt.Println("-----shell--", string(data))
 				return string(data)
 			}
 			msgs = append(msgs, message)
@@ -43,31 +61,30 @@ func Command(m map[string]string) string {
 	return ""
 }
 
-func StreamCommand(m map[string]string, stream chan string) string {
-	msg := make(chan Message, 100)
+// func StreamCommand(m map[string]string, stream chan string) string {
+// 	msg := make(chan Message, 100)
 
-	cmd, tmp := getCmd(m)
-	if cmd == "" {
-		return "Required parameter is missing."
-	}
+// 	cmd, tmp := getCmd(m)
+// 	if cmd == "" {
+// 		return "Required parameter is missing."
+// 	}
 
-	go execGrepCmd(cmd, tmp, msg)
+// 	go ExecGrepCmd(cmd, tmp, msg)
 
-	for {
-		select {
-		case message, ok := <-msg:
-			if ok != true {
-				break
-			}
-			data, _ := json.Marshal(message)
-			stream <- string(data)
-			fmt.Println("-----shell--", string(data))
-		}
-	}
-	return ""
-}
+// 	for {
+// 		select {
+// 		case message, ok := <-msg:
+// 			if ok != true {
+// 				break
+// 			}
+// 			data, _ := json.Marshal(message)
+// 			stream <- string(data)
+// 		}
+// 	}
+// 	return ""
+// }
 
-func getCmd(m map[string]string) (string, string) {
+func GetCmd(m map[string]string) (string, string) {
 
 	id := m["UUID"]
 	sspId := m["SspID"]
@@ -119,15 +136,21 @@ func getCmd(m map[string]string) (string, string) {
 	switch m["Type"] {
 	case "cat":
 		prefixCmd = "cat "
+
 	case "tail":
 		prefixCmd = "tail -f "
+		f, err := getLatestFileName(config.Conf.Client.Target.Dir)
+		if err != nil {
+			return "", ""
+		}
+		file = f
 	}
 	grep = prefixCmd + file + grep + " >" + config.Conf.Client.Target.Dir + id + ".tmp"
 
 	return grep, config.Conf.Client.Target.Dir + id + ".tmp"
 }
 
-func execGrepCmd(cmd string, tmp string, msg chan Message) {
+func ExecGrepCmd(ctx context.Context, cmd string, tmp string, msg chan Message) {
 	message := Message{}
 	defer close(msg)
 
@@ -141,6 +164,8 @@ func execGrepCmd(cmd string, tmp string, msg chan Message) {
 	}
 
 	message.IP = strings.Join(ips, ",")
+
+	fmt.Println("----------cmd=", cmd)
 	IsCmd := exec.Command("bash", "-c", cmd)
 
 	method := ""
@@ -174,10 +199,47 @@ func execGrepCmd(cmd string, tmp string, msg chan Message) {
 	case "cat":
 		ReadCatTmpFile(f, msg, message)
 	case "tail":
-		ReadTailTmpFile(f, msg, message)
+		ReadTailTmpFile(ctx, f, msg, message)
 	}
 
 	return
+}
+
+// func getLatestFileName() string {
+
+// 	t := time.Now()
+// 	year, month, date := t.Date()
+// 	hour := t.Hour()
+// 	minute := t.Minute()
+// 	name := config.Conf.Client.Target.Dir + "api.log." + strconv.Itoa(year) + fmt.Sprintf("%02d", int(month)) + fmt.Sprintf("%02d", date) + fmt.Sprintf("%02d", hour) + fmt.Sprintf("%02d", minute)
+
+// 	return name
+// }
+
+func getLatestFileName(dir string) (string, error) {
+	fileInformation, err := ioutil.ReadDir(dir)
+	if err != nil {
+		fmt.Println("read dir is failed, err:", err)
+		return "", nil
+	}
+
+	var fileInfos fileInfo
+	for _, file := range fileInformation {
+		fi := &FileInfo{
+			Name:    file.Name(),
+			ModTime: file.ModTime(),
+		}
+
+		// 针对 server_api 日志名称格式
+		if strings.Contains(fi.Name, "api.log.") {
+			fileInfos = append(fileInfos, fi)
+		}
+	}
+	sort.Sort(fileInfos)
+
+	fmt.Println("------name:", fileInfos[len(fileInfos)-1].Name, "modtime:", fileInfos[len(fileInfos)-1].ModTime)
+
+	return config.Conf.Client.Target.Dir + fileInfos[len(fileInfos)-1].Name, nil
 }
 
 func removeTmpFile(file string) {
@@ -186,5 +248,5 @@ func removeTmpFile(file string) {
 	util.AddDelayFunc("remove", func(file interface{}) {
 		os.Remove(file.(string))
 	})
-	util.Tw.AddTimer(60*time.Second, "remove", util.GenerateDelayParameter("remove", file))
+	util.Tw.AddTimer(600*time.Second, "remove", util.GenerateDelayParameter("remove", file))
 }

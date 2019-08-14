@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"runtime/debug"
+	"time"
 
 	"github.com/yumimobi/trace/util/json"
 
@@ -35,8 +37,16 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Entry.Error().Err(err).Msg("websocket connect is failed")
+		return
 	}
-	defer c.Close()
+
+	defer func() {
+		if err := recover(); err != nil {
+			debug.PrintStack()
+		}
+
+		c.Close()
+	}()
 
 	mt, message, err := c.ReadMessage()
 	if err != nil {
@@ -46,11 +56,11 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Entry.Debug().Str("req", string(message)).Msg("websocket request msg")
 
-	request := &grpc.Request{}
-	err = json.Unmarshal(message, request)
-	if err != nil {
-		return
-	}
+	// request := &grpc.Request{}
+	// err = json.Unmarshal(message, request)
+	// if err != nil {
+	// 	return
+	// }
 
 	SendGRPCMsg(mt, c, message)
 
@@ -58,6 +68,8 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendGRPCMsg(mt int, c *websocket.Conn, req []byte) {
+	// 因为是一对多，只能用close channel
+	stop := make(chan struct{})
 	resps := make(chan *grpc.Response, 1000)
 
 	request := &grpc.Request{}
@@ -66,8 +78,12 @@ func SendGRPCMsg(mt int, c *websocket.Conn, req []byte) {
 		return
 	}
 
+	defer func() {
+		close(stop)
+	}()
+
 	for i, _ := range grpc.Clients {
-		go grpc.SendStreamMsg2All(request, grpc.Clients[i], resps)
+		go grpc.SendStreamMsg2All(request, grpc.Clients[i], resps, stop)
 	}
 
 	var data []byte
@@ -85,10 +101,21 @@ func SendGRPCMsg(mt int, c *websocket.Conn, req []byte) {
 				fmt.Println("marshal recv grpc msg is failed,err:", err)
 				return
 			}
+
+		case <-time.Tick(time.Second * 5):
+			pingFunc := c.PingHandler()
+			err = pingFunc("ping")
+			if err != nil {
+				// client 端关闭
+				fmt.Println("websocket ping client is failed")
+				return
+			}
+
+			fmt.Println("ping")
+			continue
 		}
 
-		data = bytes.ReplaceAll(data, []byte(`\x03`), []byte(`\n`))
-		data = bytes.ReplaceAll(data, []byte(`\`), []byte(``))
+		data = trimResponse(data)
 		err = c.WriteMessage(mt, data)
 		if err != nil {
 			log.Entry.Error().Err(err).Int("msg type", mt).Msg("websocket write is failed")
@@ -98,4 +125,11 @@ func SendGRPCMsg(mt int, c *websocket.Conn, req []byte) {
 	}
 
 	return
+}
+
+// 去掉转义字符和日志中的无效数据
+func trimResponse(data []byte) []byte {
+	data = bytes.ReplaceAll(data, []byte(`\x03`), []byte(`\n`))
+	data = bytes.ReplaceAll(data, []byte(`\`), []byte(``))
+	return data
 }

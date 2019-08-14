@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/yumimobi/trace/config"
 )
@@ -30,7 +31,7 @@ func (c *Client) StartHTTP() error {
 	gin.SetMode(gin.DebugMode)
 	r := gin.New()
 
-	// pprof.Register(r)
+	pprof.Register(r)
 
 	c.Router(r)
 

@@ -12,6 +12,7 @@ import (
 
 /*
 	服务端重启，客户端自动重连
+	recover捕获panic
 */
 func main() {
 	err := config.Init()

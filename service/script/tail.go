@@ -1,6 +1,7 @@
 package script
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -65,9 +66,10 @@ func waitCreateFile(fileName string) {
 	}
 }
 
+// tail 进程没有杀干净
 func killProcess(cmd *exec.Cmd) {
 
-	time.Sleep(time.Second * 500)
+	time.Sleep(time.Second * 50)
 
 	err := cmd.Process.Kill()
 	if err != nil {
@@ -83,7 +85,8 @@ func killProcess(cmd *exec.Cmd) {
 	fmt.Println("kill tail. ")
 }
 
-func ReadTailTmpFile(f *os.File, msg chan Message, message Message) {
+func ReadTailTmpFile(ctx context.Context, f *os.File, msg chan Message, message Message) {
+	fmt.Println("-------ReadTailTmpFile", f.Name())
 	// 延迟删除临时文件
 	removeTmpFile(f.Name())
 
@@ -100,19 +103,30 @@ func ReadTailTmpFile(f *os.File, msg chan Message, message Message) {
 		return
 	}
 
-	for true {
-		line, ok := <-tailfs.Lines
-		// ok 是判断管道是否被关闭，如果关闭就是文件被重置了，需要重新读取新的管道
+	defer func() {
+		// 使用 Done 程序会崩
+		// tailfs.Done()
+		tailfs.Kill(nil)
+	}()
 
-		if !ok {
-			fmt.Println("tailf fail close reopen, fileName:", f.Name())
-			continue
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("stop tail.")
+			return
+		case line, ok := <-tailfs.Lines:
+			// ok 是判断管道是否被关闭，如果关闭就是文件被重置了，需要重新读取新的管道
+
+			if !ok {
+				fmt.Println("tailf fail close reopen, fileName:", f.Name())
+				// continue
+				close(msg)
+			}
+
+			message.Msg = line.Text
+			msg <- message
+
+			fmt.Println("text:", line.Text)
 		}
-
-		message.Msg = line.Text
-		msg <- message
-
-		fmt.Println("text:", line.Text)
 	}
-
 }

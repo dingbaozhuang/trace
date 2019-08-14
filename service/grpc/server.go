@@ -2,7 +2,7 @@ package grpc
 
 import (
 	context "context"
-	"errors"
+	"encoding/json"
 	fmt "fmt"
 	"net"
 	"strings"
@@ -74,30 +74,49 @@ func (s *server) ListTransportLog(req *Request, stream Trace_ListTransportLogSer
 		}
 
 		if err := stream.Send(resp); err != nil {
+			fmt.Println("stream send msg is faild,err:", err)
 			return err
 		}
 		return nil
 	}
 
 	m := requestConvert2Map(req)
-	resp := &Response{}
-	message := make(chan string, 100)
-	go script.StreamCommand(m, message)
+	StreamCommand(m, stream)
 
+	return nil
+}
+
+func StreamCommand(m map[string]string, stream Trace_ListTransportLogServer) string {
+	msg := make(chan script.Message, 100)
+
+	cmd, tmp := script.GetCmd(m)
+	if cmd == "" {
+		return "Required parameter is missing."
+	}
+
+	ctx, cancle := context.WithCancel(context.Background())
+	go script.ExecGrepCmd(ctx, cmd, tmp, msg)
+
+	resp := &Response{}
 	for {
 		select {
-		case msg, ok := <-message:
+		case message, ok := <-msg:
 			if ok != true {
-				return errors.New("recv tail msg is faile.")
+				break
 			}
-
-			resp.Data = msg
+			data, _ := json.Marshal(message)
+			resp.Data = string(data)
 			if err := stream.Send(resp); err != nil {
-				return err
+				fmt.Println("stream send tail msg is failed, err:", err)
+				return ""
 			}
+		case <-stream.Context().Done():
+			cancle()
+			fmt.Println("client close context", stream.Context().Err())
+			return ""
 		}
 	}
-	return nil
+	return ""
 }
 
 func requestConvert2Map(req *Request) map[string]string {
