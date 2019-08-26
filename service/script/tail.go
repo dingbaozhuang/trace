@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -68,15 +69,27 @@ func waitCreateFile(fileName string) {
 
 // tail 进程没有杀干净
 func killProcess(cmd *exec.Cmd) {
+	fmt.Println("~~~~pid=", cmd.Process.Pid)
 
 	time.Sleep(time.Second * 50)
 
-	err := cmd.Process.Kill()
+	// 杀死进程组
+	err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 	if err != nil {
-		fmt.Println("kill is failed, err:", err)
+		fmt.Println("kill process team is failed, err:", err)
+		os.Exit(0)
 	}
+	// err := cmd.Process.Kill()
+	// if err != nil {
+	// 	fmt.Println("kill is failed, err:", err)
+	// }
+	// // cmd.Process.Kill 不wait会造成僵尸进程,此处不需要wait，cmd.Process.Kill 不会造成僵尸进程，只会造成孤儿进程
+	// _, err = cmd.Process.Wait()
+	// if err != nil {
+	// 	fmt.Println("cmd process wait is failed,err:", err)
+	// }
 
-	// 不wait会造成僵尸进程
+	// 此处如果不wait会造成僵尸进程
 	_, err = cmd.Process.Wait()
 	if err != nil {
 		fmt.Println("cmd process wait is failed,err:", err)

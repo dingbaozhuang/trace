@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/yumimobi/trace/config"
@@ -166,7 +167,10 @@ func ExecGrepCmd(ctx context.Context, cmd string, tmp string, msg chan Message) 
 	message.IP = strings.Join(ips, ",")
 
 	fmt.Println("----------cmd=", cmd)
+
 	IsCmd := exec.Command("bash", "-c", cmd)
+	// Go会将PGID设置成与PID相同的值
+	IsCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	method := ""
 	if strings.HasPrefix(cmd, "cat") {
